@@ -1,0 +1,19 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Fraud hold</title>
+  <link rel="stylesheet" href="/static/legacy.css">
+</head>
+<body>
+<div class="notice">
+  <p><b>This member has a fraud hold. Continue?</b></p>
+  <p>Override requires a teller with hold-release authority. Unattended automation must not decide this.</p>
+  <form method="post" action="/cgi/fraud.asp">
+    <input type="hidden" name="member_id" value="{{ member_id }}">
+    <input type="hidden" name="inst" value="{{ inst }}">
+    <input type="submit" name="decision" value="continue">
+    <input type="submit" name="decision" value="cancel">
+  </form>
+</div>
+</body>
+</html>

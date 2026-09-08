@@ -1,0 +1,5 @@
+{"ts": "2026-09-08T19:41:28.213336+00:00", "kind": "recovered", "handler": "notice"}
+{"ts": "2026-09-08T19:41:28.218011+00:00", "kind": "step", "step_id": "s1", "action": "type", "parameter": "member_id"}
+{"ts": "2026-09-08T19:41:36.490998+00:00", "kind": "step", "step_id": "s2", "action": "click", "parameter": null}
+{"ts": "2026-09-08T19:41:36.720226+00:00", "kind": "step", "step_id": "s3", "action": "click", "parameter": null}
+{"ts": "2026-09-08T19:41:45.023443+00:00", "kind": "success", "outputs": {"regular_share_balance": "$4,250.17"}}

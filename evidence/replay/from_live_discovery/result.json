@@ -1,0 +1,9 @@
+{
+  "status": "success",
+  "mode": "replay",
+  "capability": "evidence/capabilities/lookup_regular_share_balance.discovered.json",
+  "inputs": {"member_id": "12345"},
+  "outputs": {"regular_share_balance": "$4,250.17"},
+  "recovered": ["notice"],
+  "notes": "Deterministic replay of the live-model-compiled artifact. No LLM calls."
+}

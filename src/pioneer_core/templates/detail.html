@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Share Inquiry</title>
+  <link rel="stylesheet" href="/static/legacy.css">
+</head>
+<body>
+<div class="panel">
+  <p class="ttl">Share Inquiry — Account Base {{ member.member_id }}</p>
+  <table border="0" cellpadding="4" cellspacing="0">
+    <tr>
+      <td class="k">Member name</td>
+      <td class="v">{{ member.display_name }}</td>
+    </tr>
+    <tr>
+      <td class="k">Member since</td>
+      <td>{{ member.member_since }}</td>
+    </tr>
+    <tr>
+      <td class="k">{{ share_label }}</td>
+      <td class="v">{{ savings_display }}</td>
+    </tr>
+    <tr>
+      <td class="k">{{ draft_label }}</td>
+      <td>{{ checking_display }}</td>
+    </tr>
+    <tr>
+      <td class="k">Status</td>
+      <td>{{ member.status }}</td>
+    </tr>
+  </table>
+  <p>
+    <a href="/cgi/ws.asp?view=lookup&amp;inst={{ inst }}">Back to Inquiry</a>
+    &nbsp;|&nbsp;
+    <a href="/cgi/open.asp?id={{ member.member_id }}&amp;inst={{ inst }}">Open New Share</a>
+  </p>
+</div>
+</body>
+</html>

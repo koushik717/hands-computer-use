@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "mode": "replay",
+  "capability_id": "lookup_regular_share_balance",
+  "inputs": {"member_id": "12345"},
+  "target": "http://127.0.0.1:8765/?inst=lakeside",
+  "outputs": {"regular_share_balance": "$4,250.17"},
+  "recovered": ["notice"],
+  "notes": "Same artifact, second tenant skin. Labels changed (Acct Base / Inquire / Primary Share); vendor field names and share ID S0000 did not."
+}

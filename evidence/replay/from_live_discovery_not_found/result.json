@@ -1,0 +1,9 @@
+{
+  "status": "business_outcome",
+  "mode": "replay",
+  "capability": "evidence/capabilities/lookup_regular_share_balance.discovered.json",
+  "inputs": {"member_id": "99999"},
+  "outcome_code": "member_not_found",
+  "outputs": {},
+  "notes": "Same discovered artifact; exceptional input yields a business outcome, not a crash."
+}

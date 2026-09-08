@@ -1,0 +1,38 @@
+# Default runtime policy. Capabilities may tighten, never loosen, this allowlist.
+allowed_hosts:
+  - 127.0.0.1
+  - localhost
+allowed_url_prefixes:
+  - http://127.0.0.1
+  - http://localhost
+allowed_actions:
+  - click
+  - type
+  - select
+  - dismiss
+  - wait
+  - extract
+  - press
+denied_actions:
+  - navigate_external
+irreversible_name_patterns:
+  - "Confirm Open"
+  - "Post Transaction"
+  - "Submit Transfer"
+  - "Close Account"
+  - "Delete"
+judgment_name_patterns:
+  - "fraud hold"
+  - "override"
+  - "force post"
+max_steps: 25
+step_timeout_ms: 12000
+run_timeout_s: 120
+redact_parameter_names:
+  - password
+  - token
+  - ssn
+  - account_number
+  - routing_number
+  - dob
+  - member_name

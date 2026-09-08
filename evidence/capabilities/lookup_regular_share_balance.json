@@ -1,0 +1,419 @@
+{
+  "schema_version": "1.0",
+  "id": "lookup_regular_share_balance",
+  "name": "lookup_regular_share_balance",
+  "version": 1,
+  "description": "Look up a membership by member number and return the regular share (S0000) available balance. Inquiry only.",
+  "entry": {
+    "kind": "web",
+    "app_family": "pioneer_core",
+    "url": "http://127.0.0.1:8765",
+    "launch": null
+  },
+  "parameters": [
+    {
+      "name": "member_id",
+      "type": "string",
+      "description": "Membership / account base",
+      "required": true,
+      "sensitive": false,
+      "enum": null,
+      "example": "12345"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "regular_share_balance",
+      "type": "currency",
+      "description": "Available balance of regular share S0000",
+      "sensitive": false,
+      "target": {
+        "description": "Regular share available balance (S0000)",
+        "primary": {
+          "by": "table",
+          "role": null,
+          "name": null,
+          "name_exact": true,
+          "text": null,
+          "near": "S0000",
+          "css": null,
+          "nth": 1,
+          "frame": "ws",
+          "html_name": null
+        },
+        "fallbacks": [
+          {
+            "by": "near_text",
+            "role": "generic",
+            "name": null,
+            "name_exact": true,
+            "text": null,
+            "near": "S0000",
+            "css": null,
+            "nth": null,
+            "frame": "ws",
+            "html_name": null
+          }
+        ],
+        "witness": {
+          "kind": "text",
+          "value": "Share Inquiry"
+        },
+        "rationale": "Target the share ID S0000, not the tenant's marketing label ('Regular Share' vs 'Primary Share')."
+      },
+      "pattern": "\\$[\\d,]+\\.\\d{2}"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "action": "type",
+      "target": {
+        "description": "Member number field on inquiry (no label-for; adjacent table text)",
+        "primary": {
+          "by": "near_text",
+          "role": "textbox",
+          "name": null,
+          "name_exact": true,
+          "text": null,
+          "near": "Member Number",
+          "css": null,
+          "nth": null,
+          "frame": "ws",
+          "html_name": "txtMemNo"
+        },
+        "fallbacks": [
+          {
+            "by": "near_text",
+            "role": "textbox",
+            "name": null,
+            "name_exact": true,
+            "text": null,
+            "near": "Acct Base",
+            "css": null,
+            "nth": null,
+            "frame": "ws",
+            "html_name": "txtMemNo"
+          },
+          {
+            "by": "css",
+            "role": null,
+            "name": null,
+            "name_exact": true,
+            "text": null,
+            "near": null,
+            "css": "input[name='txtMemNo']",
+            "nth": null,
+            "frame": "ws",
+            "html_name": null
+          }
+        ],
+        "witness": {
+          "kind": "text",
+          "value": "Member Inquiry"
+        },
+        "rationale": "Primary: visible label used by Pioneer. Fallback near-text is the Lakeside tenant label. Last fallback is the vendor field name txtMemNo, which both tenants share."
+      },
+      "value": null,
+      "parameter": "member_id",
+      "extract_as": null,
+      "risk": "safe",
+      "wait": {
+        "appear_ms": 10000,
+        "settle_ms": 150,
+        "retry": 2
+      },
+      "notes": null
+    },
+    {
+      "id": "s2",
+      "action": "click",
+      "target": {
+        "description": "Inquiry submit",
+        "primary": {
+          "by": "role",
+          "role": "button",
+          "name": "Search",
+          "name_exact": true,
+          "text": null,
+          "near": null,
+          "css": null,
+          "nth": null,
+          "frame": "ws",
+          "html_name": null
+        },
+        "fallbacks": [
+          {
+            "by": "role",
+            "role": "button",
+            "name": "Inquire",
+            "name_exact": true,
+            "text": null,
+            "near": null,
+            "css": null,
+            "nth": null,
+            "frame": "ws",
+            "html_name": null
+          },
+          {
+            "by": "css",
+            "role": null,
+            "name": null,
+            "name_exact": true,
+            "text": null,
+            "near": null,
+            "css": "input[name='btnInq']",
+            "nth": null,
+            "frame": "ws",
+            "html_name": null
+          }
+        ],
+        "witness": null,
+        "rationale": "Role+name for the Pioneer label; vendor name btnInq is tenant-stable."
+      },
+      "value": null,
+      "parameter": null,
+      "extract_as": null,
+      "risk": "safe",
+      "wait": {
+        "appear_ms": 10000,
+        "settle_ms": 150,
+        "retry": 2
+      },
+      "notes": null
+    },
+    {
+      "id": "s3",
+      "action": "click",
+      "target": {
+        "description": "Result row for this membership",
+        "primary": {
+          "by": "role",
+          "role": "link",
+          "name": "{{member_id}}",
+          "name_exact": true,
+          "text": null,
+          "near": null,
+          "css": null,
+          "nth": null,
+          "frame": "ws",
+          "html_name": null
+        },
+        "fallbacks": [
+          {
+            "by": "css",
+            "role": null,
+            "name": null,
+            "name_exact": true,
+            "text": null,
+            "near": null,
+            "css": "a[href*='id={{member_id}}']",
+            "nth": null,
+            "frame": "ws",
+            "html_name": null
+          }
+        ],
+        "witness": null,
+        "rationale": "The result link text is the member number. Interpolated at replay time."
+      },
+      "value": null,
+      "parameter": null,
+      "extract_as": null,
+      "risk": "safe",
+      "wait": {
+        "appear_ms": 10000,
+        "settle_ms": 150,
+        "retry": 2
+      },
+      "notes": null
+    },
+    {
+      "id": "s4",
+      "action": "extract",
+      "target": {
+        "description": "Regular share available balance (S0000)",
+        "primary": {
+          "by": "table",
+          "role": null,
+          "name": null,
+          "name_exact": true,
+          "text": null,
+          "near": "S0000",
+          "css": null,
+          "nth": 1,
+          "frame": "ws",
+          "html_name": null
+        },
+        "fallbacks": [
+          {
+            "by": "near_text",
+            "role": "generic",
+            "name": null,
+            "name_exact": true,
+            "text": null,
+            "near": "S0000",
+            "css": null,
+            "nth": null,
+            "frame": "ws",
+            "html_name": null
+          }
+        ],
+        "witness": {
+          "kind": "text",
+          "value": "Share Inquiry"
+        },
+        "rationale": "Target the share ID S0000, not the tenant's marketing label ('Regular Share' vs 'Primary Share')."
+      },
+      "value": null,
+      "parameter": null,
+      "extract_as": "regular_share_balance",
+      "risk": "sensitive",
+      "wait": {
+        "appear_ms": 10000,
+        "settle_ms": 150,
+        "retry": 2
+      },
+      "notes": null
+    }
+  ],
+  "checkpoint": {
+    "description": "Share inquiry screen is showing",
+    "all_of": [
+      {
+        "kind": "text",
+        "value": "Share Inquiry"
+      }
+    ]
+  },
+  "handlers": [
+    {
+      "id": "notice",
+      "description": "First-visit maintenance interstitial",
+      "when": {
+        "text_contains": "Scheduled maintenance window",
+        "url_glob": null
+      },
+      "then": "recover",
+      "outcome_code": null,
+      "recover": {
+        "action": "click",
+        "target": {
+          "description": "Dismiss the scheduled-maintenance notice",
+          "primary": {
+            "by": "role",
+            "role": "button",
+            "name": "Continue to Console",
+            "name_exact": true,
+            "text": null,
+            "near": null,
+            "css": null,
+            "nth": null,
+            "frame": "ws",
+            "html_name": null
+          },
+          "fallbacks": [
+            {
+              "by": "css",
+              "role": null,
+              "name": null,
+              "name_exact": true,
+              "text": null,
+              "near": null,
+              "css": "input[name='btnContinue']",
+              "nth": null,
+              "frame": "ws",
+              "html_name": null
+            }
+          ],
+          "witness": null,
+          "rationale": "Notice is optional. It is a handler, not a required first step."
+        }
+      },
+      "message": "Dismissed scheduled-maintenance notice"
+    },
+    {
+      "id": "not_found",
+      "description": "Inquiry returned no membership",
+      "when": {
+        "text_contains": "No member record matches the number entered.",
+        "url_glob": null
+      },
+      "then": "business_outcome",
+      "outcome_code": "member_not_found",
+      "recover": null,
+      "message": "No member record matches the number entered."
+    },
+    {
+      "id": "validation",
+      "description": "Empty member number",
+      "when": {
+        "text_contains": "Member Number is required.",
+        "url_glob": null
+      },
+      "then": "business_outcome",
+      "outcome_code": "validation_error",
+      "recover": null,
+      "message": "Member Number is required."
+    },
+    {
+      "id": "denied",
+      "description": "Teller lacks privilege to view the membership",
+      "when": {
+        "text_contains": "You do not have sufficient privileges to view this member.",
+        "url_glob": null
+      },
+      "then": "business_outcome",
+      "outcome_code": "permission_denied",
+      "recover": null,
+      "message": "You do not have sufficient privileges to view this member."
+    },
+    {
+      "id": "fraud_hold",
+      "description": "Fraud hold is a judgment call, not a click to skip",
+      "when": {
+        "text_contains": "This member has a fraud hold.",
+        "url_glob": null
+      },
+      "then": "escalate",
+      "outcome_code": "fraud_hold",
+      "recover": null,
+      "message": "Fraud hold requires a human with hold-release authority."
+    },
+    {
+      "id": "session_expired",
+      "description": "Do not type credentials to recover a session",
+      "when": {
+        "text_contains": "Your teller session has expired.",
+        "url_glob": null
+      },
+      "then": "escalate",
+      "outcome_code": "session_expired",
+      "recover": null,
+      "message": "Teller session expired; credentials are out of policy."
+    }
+  ],
+  "policy": {
+    "allowed_hosts": [
+      "127.0.0.1",
+      "localhost"
+    ],
+    "allowed_actions": [
+      "click",
+      "type",
+      "select",
+      "dismiss",
+      "wait",
+      "extract",
+      "press"
+    ],
+    "irreversible_requires": "hitl"
+  },
+  "approval": "approved",
+  "overlays": [],
+  "metadata": {
+    "created_at": "2026-09-08T19:41:26.815098+00:00",
+    "discovery_run_id": "authored-golden",
+    "compiler": "hands/0.1",
+    "source": "authored"
+  }
+}

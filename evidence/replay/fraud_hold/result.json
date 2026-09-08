@@ -1,0 +1,14 @@
+{
+  "status": "success",
+  "mode": "replay",
+  "capability_id": "lookup_regular_share_balance",
+  "inputs": {"member_id": "77777"},
+  "outputs": {"regular_share_balance": "$640.02"},
+  "recovered": ["notice", "fraud_hold"],
+  "escalation": {
+    "reason": "Fraud hold requires a human with hold-release authority.",
+    "same_session": true,
+    "human_actions_recorded": true
+  },
+  "notes": "Replay paused on the live session. A human clicked continue on that same session. Control returned to the agent; extract completed."
+}

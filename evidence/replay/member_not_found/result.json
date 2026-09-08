@@ -1,0 +1,9 @@
+{
+  "status": "business_outcome",
+  "mode": "replay",
+  "capability_id": "lookup_regular_share_balance",
+  "inputs": {"member_id": "99999"},
+  "outputs": {},
+  "outcome_code": "member_not_found",
+  "notes": "No such membership is a legitimate result for the calling agent, not a failed capability."
+}

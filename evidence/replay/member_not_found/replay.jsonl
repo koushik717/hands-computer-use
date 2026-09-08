@@ -1,0 +1,3 @@
+{"ts": "2026-09-08T19:41:45.742629+00:00", "kind": "recovered", "handler": "notice"}
+{"ts": "2026-09-08T19:41:45.745736+00:00", "kind": "step", "step_id": "s1", "action": "type", "parameter": "member_id"}
+{"ts": "2026-09-08T19:41:54.009653+00:00", "kind": "step", "step_id": "s2", "action": "click", "parameter": null}

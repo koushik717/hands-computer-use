@@ -1,0 +1,6 @@
+{"ts": "2026-09-08T19:42:12.503178+00:00", "kind": "recovered", "handler": "notice"}
+{"ts": "2026-09-08T19:42:12.508036+00:00", "kind": "step", "step_id": "s1", "action": "type", "parameter": "member_id"}
+{"ts": "2026-09-08T19:42:20.750751+00:00", "kind": "step", "step_id": "s2", "action": "click", "parameter": null}
+{"ts": "2026-09-08T19:42:21.022376+00:00", "kind": "escalated", "escalation_id": "494b686bc9", "reason": "Fraud hold requires a human with hold-release authority.", "step_id": "s2"}
+{"ts": "2026-09-08T19:42:21.089285+00:00", "kind": "resumed", "escalation_id": "494b686bc9", "human_actions": [{"type": "click", "tag": "INPUT", "name": "decision", "value": "continue", "t": 1788896541056, "x": 310, "y": 136}, {"type": "click", "tag": "INPUT", "name": "decision", "value": "continue", "t": 1788896541056, "x": 310, "y": 136}]}
+{"ts": "2026-09-08T19:42:29.517248+00:00", "kind": "success", "outputs": {"regular_share_balance": "$640.02"}}
