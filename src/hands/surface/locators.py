@@ -72,6 +72,7 @@ async def _visible_count(loc: Locator) -> int:
 
 
 async def resolve_candidate(page: Page, c: LocatorCandidate) -> Locator | None:
+    """Resolve exactly as declared. Vendor html_name is a fallback candidate, not a short-circuit."""
     scopes: list[Page | FrameLocator] = []
     if c.frame:
         scopes.append(frame_scope(page, c.frame))
@@ -80,17 +81,6 @@ async def resolve_candidate(page: Page, c: LocatorCandidate) -> Locator | None:
         n = await page.locator("iframe").count()
         for i in range(n):
             scopes.append(page.frame_locator("iframe").nth(i))
-
-    # Prefer an explicit vendor name if both css and html_name are set.
-    if c.html_name and c.by != LocatorStrategy.CSS:
-        named = LocatorCandidate(
-            by=LocatorStrategy.CSS,
-            css=f"[name='{c.html_name}']",
-            frame=c.frame,
-        )
-        found = await resolve_candidate(page, named)
-        if found is not None:
-            return found
 
     for scope in scopes:
         loc = _build(scope, c)
@@ -108,7 +98,18 @@ async def resolve_candidate(page: Page, c: LocatorCandidate) -> Locator | None:
 
 
 async def resolve_all(page: Page, primary: LocatorCandidate, fallbacks: list[LocatorCandidate]) -> Locator:
-    tried = [primary, *fallbacks]
+    tried: list[LocatorCandidate] = [primary, *fallbacks]
+    # Vendor control name is an intentional last-resort when the primary strategy did not declare CSS.
+    if primary.html_name and not any(
+        (c.by == LocatorStrategy.CSS and c.css and primary.html_name in (c.css or "")) for c in tried
+    ):
+        tried.append(
+            LocatorCandidate(
+                by=LocatorStrategy.CSS,
+                css=f"[name='{primary.html_name}']",
+                frame=primary.frame,
+            )
+        )
     labels = []
     for c in tried:
         labels.append(_candidate_label(c))

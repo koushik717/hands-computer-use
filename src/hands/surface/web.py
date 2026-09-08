@@ -61,9 +61,17 @@ class WebDriver:
                 observed=self.page.url,
             ) from last_err
 
-    async def act(self, action: ActionType, target: ControlTarget, value: str | None) -> None:
+    async def act(
+        self,
+        action: ActionType,
+        target: ControlTarget,
+        value: str | None,
+        *,
+        appear_ms: int = 10000,
+        settle_ms: int = 200,
+    ) -> None:
         if target.witness:
-            await self._wait_witness(target.witness, 8000)
+            await self._wait_witness(target.witness, appear_ms)
         loc = await resolve_all(self.page, target.primary, target.fallbacks)
         if action in {ActionType.CLICK, ActionType.DISMISS}:
             await loc.click()
@@ -79,18 +87,20 @@ class WebDriver:
             return
         else:
             raise PolicyViolation(f"unsupported action {action}")
-        await self.page.wait_for_timeout(200)
+        await self.page.wait_for_timeout(settle_ms)
         try:
             await self.page.wait_for_load_state("domcontentloaded", timeout=5000)
         except Exception:
             pass
 
-    async def read(self, target: ControlTarget) -> str:
+    async def read(self, target: ControlTarget, *, appear_ms: int = 10000) -> str:
         if target.witness:
-            await self._wait_witness(target.witness, 8000)
+            await self._wait_witness(target.witness, appear_ms)
         loc = await resolve_all(self.page, target.primary, target.fallbacks)
         text = (await loc.inner_text()).strip()
         if not text:
             text = (await loc.text_content() or "").strip()
         money = parse_currency(text)
-        return money or text
+        if money:
+            return money
+        return text

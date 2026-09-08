@@ -57,7 +57,7 @@ uv run hands replay \
   --input member_id=99999
 ```
 
-`--teacher` is a deterministic stand-in of the same loop for evals when you do not want to spend a model call. It is labeled in `evidence/discovery/result.json`. Do not submit `--teacher` as if it were the live-model run.
+`--teacher` is a deterministic stand-in of the same loop for offline evals. The checked-in discovery evidence is a **live model run** (`evidence/discovery/result.json`, `teacher: false`).
 
 ## What Pioneer Core is
 
@@ -112,6 +112,14 @@ curl -s -X POST http://127.0.0.1:8767/v1/capabilities/lookup_regular_share_balan
 ```
 
 That is the seam BankGPT (or any calling agent) would use: discover a capability by name, pass typed args, get a structured result.
+
+## Operator console (HITL)
+
+```bash
+uv run hands operator      # http://127.0.0.1:8766
+```
+
+Escalations register the live browser session. The demo fraud-hold path exercises the same lease with an in-process human callback so it is reproducible without a person at the keyboard.
 
 ## Design
 

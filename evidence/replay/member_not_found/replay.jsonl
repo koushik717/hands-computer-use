@@ -1,3 +1,4 @@
-{"ts": "2026-09-08T19:41:45.742629+00:00", "kind": "recovered", "handler": "notice"}
-{"ts": "2026-09-08T19:41:45.745736+00:00", "kind": "step", "step_id": "s1", "action": "type", "parameter": "member_id"}
-{"ts": "2026-09-08T19:41:54.009653+00:00", "kind": "step", "step_id": "s2", "action": "click", "parameter": null}
+{"ts": "2026-09-08T20:17:59.828442+00:00", "kind": "recovered", "handler": "notice"}
+{"ts": "2026-09-08T20:17:59.833254+00:00", "kind": "step", "step_id": "s1", "action": "type", "parameter": "member_id"}
+{"ts": "2026-09-08T20:18:10.037878+00:00", "kind": "step", "step_id": "s2", "action": "click", "parameter": null}
+{"ts": "2026-09-08T20:18:10.226896+00:00", "kind": "business_outcome", "code": "member_not_found", "handler": "not_found"}

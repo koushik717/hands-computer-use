@@ -11,4 +11,4 @@ demo:
 	uv run hands demo
 
 discover:
-	uv run hands demo --discovery
+	uv run hands discover --goal "Look up member 12345 and read their current regular share balance"

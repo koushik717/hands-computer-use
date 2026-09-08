@@ -1,9 +1,16 @@
 {
   "status": "business_outcome",
+  "run_id": "59eb0c81149c",
   "mode": "replay",
   "capability_id": "lookup_regular_share_balance",
-  "inputs": {"member_id": "99999"},
-  "outputs": {},
   "outcome_code": "member_not_found",
-  "notes": "No such membership is a legitimate result for the calling agent, not a failed capability."
+  "outputs": {},
+  "recovered": [
+    "notice"
+  ],
+  "failure": null,
+  "escalation_id": null,
+  "duration_ms": 11117,
+  "steps_executed": 2,
+  "controller_at_end": "agent"
 }

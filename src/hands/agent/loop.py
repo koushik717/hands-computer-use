@@ -13,7 +13,7 @@ from hands.replay.handlers import apply_handlers
 from hands.safety.engine import PolicyViolation, assert_url, classify_risk
 from hands.schema.artifact import Capability, RiskClass, RunStatus
 from hands.schema.policy import RuntimePolicy, load_policy
-from hands.schema.result import RunResult
+from hands.schema.result import FailureDetail, RunResult
 from hands.session.session import BrowserSession
 
 _MEMBER = re.compile(r"\b(\d{5})\b")
@@ -53,7 +53,7 @@ async def discover(
             status=RunStatus.BLOCKED_BY_POLICY,
             run_id=run_id,
             mode="discovery",
-            failure=None,
+            failure=FailureDetail(expected=exc.expected, observed=exc.observed),
         )
 
     session = BrowserSession(policy, evidence_dir, headed=headed, run_id=run_id)
@@ -103,6 +103,8 @@ async def discover(
                 thought=decision.thought,
                 action=decision.action,
                 ref=decision.ref,
+                text=decision.text,
+                outputs=decision.outputs,
                 reason=decision.reason,
             )
             history.append({"action": decision.action, "ref": decision.ref, "reason": decision.reason})
@@ -200,14 +202,18 @@ async def discover(
                 )
             steps_executed += 1
 
-        await session.screenshot_to("discovery-stuck.png")
+        shot = await session.screenshot_to("discovery-stuck.png")
         return None, RunResult(
             status=RunStatus.FAILED,
             run_id=run_id,
             mode="discovery",
             duration_ms=int((time.time() - started) * 1000),
             steps_executed=steps_executed,
-            failure=None,
+            failure=FailureDetail(
+                expected="goal completed within max_steps",
+                observed=f"stopped after {steps_executed} steps",
+                screenshot=str(shot),
+            ),
         )
     finally:
         await session.close()

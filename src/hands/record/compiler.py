@@ -52,9 +52,20 @@ def locators_for(control: Control, *, param_values: dict[str, str]) -> ControlTa
             frame=frame,
             html_name=control.html_name,
         )
+        if control.name == "Member Number":
+            fallbacks.insert(
+                0,
+                LocatorCandidate(
+                    by=LocatorStrategy.NEAR_TEXT,
+                    near="Acct Base",
+                    role="textbox",
+                    frame=frame,
+                    html_name=control.html_name,
+                ),
+            )
         rationale = (
             "Primary: visible label in the adjacent table cell (this screen has no label-for). "
-            "Fallback: vendor control name, which is stable across tenants of the same core."
+            "Fallback: tenant label variants, then vendor control name."
         )
     elif control.role in {"button", "link", "combobox"}:
         primary = LocatorCandidate(
@@ -63,8 +74,27 @@ def locators_for(control: Control, *, param_values: dict[str, str]) -> ControlTa
             name=name,
             frame=frame,
         )
+        if control.role == "button" and control.name == "Search":
+            fallbacks.insert(
+                0,
+                LocatorCandidate(
+                    by=LocatorStrategy.ROLE,
+                    role="button",
+                    name="Inquire",
+                    frame=frame,
+                ),
+            )
+        if control.role == "link" and control.name:
+            fallbacks.append(
+                LocatorCandidate(
+                    by=LocatorStrategy.CSS,
+                    css=f"a[href*='id={control.name}']",
+                    frame=frame,
+                )
+            )
         rationale = (
-            "Primary: accessible role + name. Fallback: vendor name attribute when present."
+            "Primary: accessible role + name. Fallbacks include tenant button labels "
+            "and vendor name attributes when present."
         )
     else:
         primary = LocatorCandidate(

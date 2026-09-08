@@ -1,9 +1,16 @@
 {
   "status": "business_outcome",
+  "run_id": "b96bff4e164f",
   "mode": "replay",
-  "capability": "evidence/capabilities/lookup_regular_share_balance.discovered.json",
-  "inputs": {"member_id": "99999"},
+  "capability_id": "lookup_regular_share_balance",
   "outcome_code": "member_not_found",
   "outputs": {},
-  "notes": "Same discovered artifact; exceptional input yields a business outcome, not a crash."
+  "recovered": [
+    "notice"
+  ],
+  "failure": null,
+  "escalation_id": null,
+  "duration_ms": 1074,
+  "steps_executed": 2,
+  "controller_at_end": "agent"
 }

@@ -411,7 +411,7 @@
   "approval": "approved",
   "overlays": [],
   "metadata": {
-    "created_at": "2026-09-08T19:41:26.815098+00:00",
+    "created_at": "2026-09-08T20:17:37.767457+00:00",
     "discovery_run_id": "authored-golden",
     "compiler": "hands/0.1",
     "source": "authored"

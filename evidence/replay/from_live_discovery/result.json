@@ -1,9 +1,18 @@
 {
   "status": "success",
+  "run_id": "4ab40d39e52f",
   "mode": "replay",
-  "capability": "evidence/capabilities/lookup_regular_share_balance.discovered.json",
-  "inputs": {"member_id": "12345"},
-  "outputs": {"regular_share_balance": "$4,250.17"},
-  "recovered": ["notice"],
-  "notes": "Deterministic replay of the live-model-compiled artifact. No LLM calls."
+  "capability_id": "lookup_regular_share_balance",
+  "outcome_code": null,
+  "outputs": {
+    "regular_share_balance": "$4,250.17"
+  },
+  "recovered": [
+    "notice"
+  ],
+  "failure": null,
+  "escalation_id": null,
+  "duration_ms": 11292,
+  "steps_executed": 3,
+  "controller_at_end": "agent"
 }

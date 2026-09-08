@@ -1,6 +1,6 @@
 # Evidence
 
-End-to-end runs against Pioneer Core.
+End-to-end runs against Pioneer Core. Every `replay/*/result.json` is a real `RunResult` dump from the runtime (not a hand-written summary). Narrative context is in this file and in `REPORT.md`.
 
 ## Discovery (LLM in the loop)
 
@@ -9,13 +9,13 @@ End-to-end runs against Pioneer Core.
 | `discovery/discovery.jsonl` | Live-model decisions (Groq `qwen/qwen3.8-27b`) |
 | `discovery/discovery-step-*.png` | Screenshots after each step |
 | `discovery/capability.json` | Compiled artifact from that run |
-| `discovery/result.json` | Summary |
+| `discovery/result.json` | Human-readable summary of the live discovery |
 
 ## Capability artifacts
 
 | Path | What it is |
 | --- | --- |
-| `capabilities/lookup_regular_share_balance.json` | Reviewed golden capability (also used by `hands demo`) |
+| `capabilities/lookup_regular_share_balance.json` | Reviewed golden capability used by `hands demo` (`approval: approved`) |
 | `capabilities/lookup_regular_share_balance.discovered.json` | Artifact compiled from the live discovery run |
 
 ## Replay (no model)

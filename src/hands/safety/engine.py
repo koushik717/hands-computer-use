@@ -114,6 +114,7 @@ _PASSWORD = re.compile(r"(?i)(password|token|secret|ssn)\s*[:=]\s*\S+")
 
 def redact_text(text: str) -> str:
     text = _SSN.sub("[REDACTED:ssn]", text)
+    text = _PAN.sub("[REDACTED:pan]", text)
     text = _PASSWORD.sub(r"\1=[REDACTED]", text)
     return text
 

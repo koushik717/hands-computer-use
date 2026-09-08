@@ -17,6 +17,10 @@ from hands.surface.locators import TargetNotFound
 EscalateHook = Callable[[BrowserSession], Awaitable[None]]
 
 
+class _CheckpointReached(Exception):
+    """Human (or recover path) already landed on the capability checkpoint."""
+
+
 async def replay(
     capability: Capability,
     inputs: dict[str, str],
@@ -43,6 +47,7 @@ async def replay(
     recovered: list[str] = []
     steps_executed = 0
     outputs: dict[str, str] = {}
+    last_escalation_id: str | None = None
 
     url = start_url or capability.entry.url
     if not url:
@@ -62,13 +67,14 @@ async def replay(
     assert session is not None and session.driver is not None
 
     async def drain(step_id: str | None) -> RunResult | None:
+        nonlocal last_escalation_id
         seen_escalate: set[str] = set()
         for _ in range(6):
             hit = await apply_handlers(session, capability, log=log)
             if hit is None:
                 return None
-            recovered.append(hit.handler.id)
             if hit.status is None:
+                recovered.append(hit.handler.id)
                 continue
             if hit.status == RunStatus.BUSINESS_OUTCOME:
                 log.event("business_outcome", code=hit.handler.outcome_code, handler=hit.handler.id)
@@ -108,8 +114,14 @@ async def replay(
                 )
                 if esc is not None:
                     return esc
+                last_escalation_id = session.intervention.id if session.intervention else last_escalation_id
                 if session.page:
                     await session.page.wait_for_timeout(400)
+                obs = await session.snapshot()
+                if capability.checkpoint.all_of and all(
+                    _witness_holds(obs, w, bound) for w in capability.checkpoint.all_of
+                ):
+                    raise _CheckpointReached()
                 continue
             if hit.status == RunStatus.FAILED:
                 obs = await session.snapshot()
@@ -124,95 +136,121 @@ async def replay(
         return None
 
     try:
-        early = await drain(None)
-        if early:
-            return early
-
-        for step in capability.steps:
-            try:
-                assert_step(step, capability, policy)
-            except PolicyViolation as exc:
-                if step.risk.value == "irreversible" and capability.policy.irreversible_requires == "hitl":
-                    result = await _escalate(
-                        session,
-                        capability,
-                        reason=str(exc),
-                        step_id=step.id,
-                        on_escalate=on_escalate,
-                        hitl_timeout_s=hitl_timeout_s,
-                        log=log,
-                        started=started,
-                        recovered=recovered,
-                        steps_executed=steps_executed,
-                    )
-                    if result is not None:
-                        return result
-                    continue
-                return _fail(
-                    run_id,
-                    "replay",
-                    step.id,
-                    exc.expected,
-                    exc.observed,
-                    RunStatus.BLOCKED_BY_POLICY,
-                )
-
-            target = bind_target(step.target, bound) if step.target else None
-            value = subst(step.value, bound) if step.value else None
-            if step.parameter:
-                value = str(bound[step.parameter])
-
-            log.event(
-                "step",
-                step_id=step.id,
-                action=step.action.value,
-                parameter=step.parameter,
-            )
-            try:
-                if step.action == ActionType.EXTRACT:
-                    if target is None:
-                        raise TargetNotFound("extract missing target", expected="target", observed="")
-                    raw = await session.driver.read(target)
-                    if step.extract_as:
-                        outputs[step.extract_as] = raw
-                    steps_executed += 1
-                elif step.action == ActionType.WAIT:
-                    await session.page.wait_for_timeout(int(value or 300))  # type: ignore[union-attr]
-                    steps_executed += 1
-                else:
-                    if target is None:
-                        raise TargetNotFound("step missing target", expected="target", observed=step.id)
-                    await session.driver.act(step.action, target, value)
-                    steps_executed += 1
-            except TargetNotFound as exc:
-                shot = await session.screenshot_to(f"fail-{step.id}.png")
-                return _fail(
-                    run_id,
-                    "replay",
-                    step.id,
-                    exc.expected,
-                    exc.observed,
-                    RunStatus.FAILED,
-                    screenshot=str(shot),
-                )
-            except PolicyViolation as exc:
-                return _fail(
-                    run_id,
-                    "replay",
-                    step.id,
-                    exc.expected,
-                    exc.observed,
-                    RunStatus.BLOCKED_BY_POLICY,
-                )
-
-            early = await drain(step.id)
+        try:
+            early = await drain(None)
             if early:
                 return early
-            obs = await session.snapshot()
-            if capability.checkpoint.all_of and all(
-                _witness_holds(obs, w, bound) for w in capability.checkpoint.all_of
-            ):
-                break
+
+            for step in capability.steps:
+                try:
+                    assert_step(step, capability, policy)
+                except PolicyViolation as exc:
+                    if step.risk.value == "irreversible" and capability.policy.irreversible_requires == "hitl":
+                        result = await _escalate(
+                            session,
+                            capability,
+                            reason=str(exc),
+                            step_id=step.id,
+                            on_escalate=on_escalate,
+                            hitl_timeout_s=hitl_timeout_s,
+                            log=log,
+                            started=started,
+                            recovered=recovered,
+                            steps_executed=steps_executed,
+                        )
+                        if result is not None:
+                            return result
+                        last_escalation_id = (
+                            session.intervention.id if session.intervention else last_escalation_id
+                        )
+                        continue
+                    return _fail(
+                        run_id,
+                        "replay",
+                        step.id,
+                        exc.expected,
+                        exc.observed,
+                        RunStatus.BLOCKED_BY_POLICY,
+                    )
+
+                target = bind_target(step.target, bound) if step.target else None
+                value = subst(step.value, bound) if step.value else None
+                if step.parameter:
+                    value = str(bound[step.parameter])
+
+                log.event(
+                    "step",
+                    step_id=step.id,
+                    action=step.action.value,
+                    parameter=step.parameter,
+                )
+                try:
+                    if step.action == ActionType.EXTRACT:
+                        if target is None:
+                            raise TargetNotFound(
+                                "extract missing target", expected="target", observed=""
+                            )
+                        raw = await session.driver.read(
+                            target,
+                            appear_ms=step.wait.appear_ms,
+                        )
+                        if step.extract_as:
+                            outputs[step.extract_as] = raw
+                        steps_executed += 1
+                    elif step.action == ActionType.WAIT:
+                        await session.page.wait_for_timeout(  # type: ignore[union-attr]
+                            int(value or step.wait.settle_ms or 300)
+                        )
+                        steps_executed += 1
+                    else:
+                        if target is None:
+                            raise TargetNotFound(
+                                "step missing target", expected="target", observed=step.id
+                            )
+                        last_err: Exception | None = None
+                        for _attempt in range(max(1, step.wait.retry + 1)):
+                            try:
+                                await session.driver.act(
+                                    step.action,
+                                    target,
+                                    value,
+                                    appear_ms=step.wait.appear_ms,
+                                    settle_ms=step.wait.settle_ms,
+                                )
+                                last_err = None
+                                break
+                            except TargetNotFound as exc:
+                                last_err = exc
+                                await session.page.wait_for_timeout(150)  # type: ignore[union-attr]
+                        if last_err is not None:
+                            raise last_err
+                        steps_executed += 1
+                except TargetNotFound as exc:
+                    shot = await session.screenshot_to(f"fail-{step.id}.png")
+                    return _fail(
+                        run_id,
+                        "replay",
+                        step.id,
+                        exc.expected,
+                        exc.observed,
+                        RunStatus.FAILED,
+                        screenshot=str(shot),
+                    )
+                except PolicyViolation as exc:
+                    return _fail(
+                        run_id,
+                        "replay",
+                        step.id,
+                        exc.expected,
+                        exc.observed,
+                        RunStatus.BLOCKED_BY_POLICY,
+                    )
+
+                early = await drain(step.id)
+                if early:
+                    return early
+        except _CheckpointReached:
+            log.event("checkpoint_via_handoff")
 
         obs = await session.snapshot()
         for w in capability.checkpoint.all_of:
@@ -233,7 +271,10 @@ async def replay(
                 continue
             target = bind_target(spec.target, bound)
             try:
-                outputs[spec.name] = await session.driver.read(target)
+                outputs[spec.name] = await session.driver.read(
+                    target,
+                    appear_ms=10000,
+                )
             except TargetNotFound as exc:
                 shot = await session.screenshot_to("fail-output.png")
                 return _fail(
@@ -254,6 +295,7 @@ async def replay(
             capability_id=capability.id,
             outputs=outputs,
             recovered=recovered,
+            escalation_id=last_escalation_id,
             duration_ms=int((time.time() - started) * 1000),
             steps_executed=steps_executed,
         )
@@ -288,8 +330,11 @@ async def _escalate(
     recovered: list[str],
     steps_executed: int,
 ) -> RunResult | None:
+    from hands.operator.app import register
+
     obs = await session.snapshot()
     ticket = await session.escalate(reason=reason, step_id=step_id, excerpt=obs.page_text)
+    register(session)
     log.event("escalated", escalation_id=ticket.id, reason=reason, step_id=step_id)
     if on_escalate is not None:
         await on_escalate(session)

@@ -2,13 +2,10 @@ from __future__ import annotations
 
 from fnmatch import fnmatch
 
-from hands.schema.artifact import Capability, Handler
-from hands.schema.artifact import RunStatus
-from hands.schema.result import RunResult
+from hands.schema.artifact import ActionType, Capability, Handler, RunStatus
 from hands.session.session import BrowserSession
 from hands.surface.a11y import Observation
 from hands.surface.locators import TargetNotFound
-from hands.surface.web import WebDriver
 
 
 class HandlerHit:
@@ -44,11 +41,7 @@ async def apply_handlers(
             if h.recover is None:
                 continue
             try:
-                await session.driver.act(
-                    ActionType_from_recover(),
-                    h.recover.target,
-                    None,
-                )
+                await session.driver.act(ActionType.CLICK, h.recover.target, None)
             except TargetNotFound:
                 continue
             if log:
@@ -61,9 +54,3 @@ async def apply_handlers(
         if h.then == "fail":
             return HandlerHit(h, RunStatus.FAILED)
     return None
-
-
-def ActionType_from_recover():
-    from hands.schema.artifact import ActionType
-
-    return ActionType.CLICK

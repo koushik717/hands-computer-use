@@ -1,6 +1,7 @@
-{"ts": "2026-09-08T19:42:12.503178+00:00", "kind": "recovered", "handler": "notice"}
-{"ts": "2026-09-08T19:42:12.508036+00:00", "kind": "step", "step_id": "s1", "action": "type", "parameter": "member_id"}
-{"ts": "2026-09-08T19:42:20.750751+00:00", "kind": "step", "step_id": "s2", "action": "click", "parameter": null}
-{"ts": "2026-09-08T19:42:21.022376+00:00", "kind": "escalated", "escalation_id": "494b686bc9", "reason": "Fraud hold requires a human with hold-release authority.", "step_id": "s2"}
-{"ts": "2026-09-08T19:42:21.089285+00:00", "kind": "resumed", "escalation_id": "494b686bc9", "human_actions": [{"type": "click", "tag": "INPUT", "name": "decision", "value": "continue", "t": 1788896541056, "x": 310, "y": 136}, {"type": "click", "tag": "INPUT", "name": "decision", "value": "continue", "t": 1788896541056, "x": 310, "y": 136}]}
-{"ts": "2026-09-08T19:42:29.517248+00:00", "kind": "success", "outputs": {"regular_share_balance": "$640.02"}}
+{"ts": "2026-09-08T20:18:32.396488+00:00", "kind": "recovered", "handler": "notice"}
+{"ts": "2026-09-08T20:18:32.401974+00:00", "kind": "step", "step_id": "s1", "action": "type", "parameter": "member_id"}
+{"ts": "2026-09-08T20:18:42.587305+00:00", "kind": "step", "step_id": "s2", "action": "click", "parameter": null}
+{"ts": "2026-09-08T20:18:42.814982+00:00", "kind": "escalated", "escalation_id": "0baedc95b6", "reason": "Fraud hold requires a human with hold-release authority.", "step_id": "s2"}
+{"ts": "2026-09-08T20:18:42.882059+00:00", "kind": "resumed", "escalation_id": "0baedc95b6", "human_actions": [{"type": "click", "tag": "INPUT", "name": "decision", "value": "continue", "t": 1788898722847, "x": 310, "y": 136}, {"type": "click", "tag": "INPUT", "name": "decision", "value": "continue", "t": 1788898722847, "x": 310, "y": 136}]}
+{"ts": "2026-09-08T20:18:43.291527+00:00", "kind": "checkpoint_via_handoff"}
+{"ts": "2026-09-08T20:18:53.307578+00:00", "kind": "success", "outputs": {"regular_share_balance": "$640.02"}}

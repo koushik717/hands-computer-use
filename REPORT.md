@@ -4,7 +4,7 @@
 
 Hands is a **compiler**, not a chatbot with a browser. Discovery is an LLM-driven observe → decide → act loop against a live surface. The successful path is compiled into a typed **capability**. Production invocation is deterministic replay of that artifact. The model is not consulted on replay — which is the only version of this that a compliance officer can defend. interface.ai’s own framing is the same: generative comprehension, then least-privilege deterministic action; regulators audit deterministic behavior, not probabilistic promises.
 
-Three processes, one machine:
+One machine, three seams:
 
 - **Pioneer Core** — a local stand-in for a credit-union inquiry screen with no API (nested tables, iframe workspace, rotating viewstate, no test IDs).
 - **Hands runtime** — policy, surface driver, replay, discovery, control lease.
@@ -12,7 +12,7 @@ Three processes, one machine:
 
 Playwright is a **driver**, not the schema. Artifacts name controls (`role`, adjacent label, vendor `name`, share ID `S0000`), never CSS-of-the-week. A desktop driver would implement the same `SurfaceDriver` against an AX tree.
 
-I kept this a single process with a CLI. Queues and multi-tenant plumbing would pretend at scale the assignment asked us not to build. The seams that *would* scale are the ones in the artifact: `app_family`, tenant overlays, handler packs, and the control lease.
+I kept the runtime a single process with a CLI. Queues and multi-tenant plumbing would pretend at scale the assignment asked us not to build. The seams that *would* scale are the ones in the artifact: `app_family`, tenant overlays, handler packs, and the control lease.
 
 ## 2. Artifact schema
 
@@ -54,7 +54,7 @@ Secondary drift: a failed witness is a wrong-page detector. Tenant label drift i
 
 **Surface.** `ControlTarget` is the recorded flow. `WebDriver` maps it onto Playwright. A desktop driver would map the same role+name onto UI Automation / AX. The iframe is just a frame name on the candidate (`frame: ws`); a native window would be a different scope with the same fields.
 
-**Tenants.** Hundreds of institutions run ~20 apps; many share a vendor core (Symitar, Jack Henry, Fiserv, …) with different chrome. The smallest honest model of that: Pioneer vs Lakeside. Same field names, same error copy, different labels (“Member Number” / “Acct Base”, “Regular Share” / “Primary Share”). One artifact, no re-record. What would come next: an `app_family` pack (handlers + default locators) plus a tenant overlay for the labels that actually changed; fingerprint the a11y of the inquiry heading; if the fingerprint moves, mark the capability `draft` and require a bounded re-discover — not a silent best-effort LLM in production.
+**Tenants.** Hundreds of institutions run ~20 apps; many share a vendor core (Symitar, Jack Henry, Fiserv, …) with different chrome. The smallest honest model of that: Pioneer vs Lakeside. Same field names, same error copy, different labels (“Member Number” / “Acct Base”, “Regular Share” / “Primary Share”). One artifact, no re-record — demonstrated by replaying the Pioneer capability against `/?inst=lakeside`. Locator fallbacks carry both tenant labels; vendor names (`txtMemNo`, `btnInq`) and share ID `S0000` are the durable anchors. `TenantOverlay` is on the schema for per-institution rewrites that cannot widen policy; this demo uses fallbacks rather than a separate overlay file because the two skins differ only in labels.
 
 ## 5. Escalation & handoff
 
@@ -62,7 +62,7 @@ Stuck is detected, not guessed: a matching handler with `then: escalate`, a risk
 
 The session holds a **lease**: `agent` | `human`. The agent cannot act without it (`NotInControl`). Escalation does not open a new browser. That is the Nexus-shaped seam: AI owns the work; human judgment arrives on the *same* interaction; no transfer, no rebuilt context.
 
-The operator UI is mocked (a small page with why-it-stopped, excerpt, screenshot, Resume). The lease, the live Playwright page, the recorded human clicks (`__handsHuman`), and resume are real. Fraud hold (`77777`) is the fixture: unattended replay must not click through a hold; a human on that session can; extract still returns `$640.02`.
+The operator UI is a thin mock (`hands operator`) — enough to show an intervention ticket and Resume. What is real is the lease, the same Playwright page, recorded human actions, and resume. The demo path uses an in-process human callback on that live session (and registers it with the operator store) so CI can prove the handoff without a person at the keyboard. Fraud hold (`77777`) is the fixture: unattended replay must not click through a hold; a human on that session can; extract still returns `$640.02`.
 
 Session expiry is also escalate — Hands will not type credentials to “recover”.
 
@@ -78,6 +78,6 @@ Policy is evaluated **at the action**, not as a prompt appendix. Off-allowlist U
 
 **Teacher vs live model.** `hands discover --teacher` is a labeled deterministic stand-in of the same observe→act→compile loop for offline evals. The required live-model run in `/evidence/discovery/` used Groq (`qwen/qwen3.8-27b` via the OpenAI-compatible API). Replay of the compiled artifact is under `evidence/replay/from_live_discovery/`.
 
-**Not built, would be next:** fingerprint-based drift; overlay files per institution; an eval harness that replays N times and tracks flakiness; emitting a Playwright test from an artifact; a real SSO/session broker so expiry can re-auth without putting secrets in Hands.
+**Not built, would be next:** fingerprint-based drift; overlay *files* per institution (schema supports `TenantOverlay` today; this demo uses multi-label fallbacks); an eval harness that replays N times and tracks flakiness; emitting a Playwright test from an artifact; a real SSO/session broker so expiry can re-auth without putting secrets in Hands; assisted single-step LLM recovery on hard fail.
 
 What I would not do with more time: put the model back in the production path.

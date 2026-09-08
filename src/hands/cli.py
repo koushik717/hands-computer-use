@@ -77,7 +77,10 @@ def core(
 def discover(
     goal: str = typer.Option(..., "--goal", help="Natural-language goal"),
     target: str = typer.Option("http://127.0.0.1:8765", "--target"),
-    out: Path = typer.Option(Path("evidence/capabilities/lookup_regular_share_balance.json"), "--out"),
+    out: Path = typer.Option(
+        Path("evidence/capabilities/lookup_regular_share_balance.discovered.json"),
+        "--out",
+    ),
     teacher: bool = typer.Option(False, "--teacher", help="Use the deterministic teacher (not a live model)"),
 ) -> None:
     """LLM-driven run against a live surface. Compiles a capability on success."""
@@ -129,7 +132,7 @@ def replay(
     )
     _print_result(result)
     evidence.mkdir(parents=True, exist_ok=True)
-    (evidence / "result.json").write_text(result.model_dump_json(indent=2))
+    (evidence / "result.json").write_text(result.model_dump_json(indent=2) + "\n")
     if result.status.value not in {"success", "business_outcome"}:
         raise typer.Exit(1)
 
@@ -156,29 +159,26 @@ def demo(
     out.write_text(cap.model_dump_json(indent=2))
 
     async def run_all() -> None:
-        ok = await run_replay(
-            cap,
-            {"member_id": "12345"},
-            start_url=url,
-            evidence_dir=ROOT / "evidence" / "replay" / "success",
-        )
-        _print_result(ok)
-        missing = await run_replay(
-            cap,
-            {"member_id": "99999"},
-            start_url=url,
-            evidence_dir=ROOT / "evidence" / "replay" / "member_not_found",
-        )
-        _print_result(missing)
-        lakeside = await run_replay(
-            cap,
-            {"member_id": "12345"},
-            start_url=url + "/?inst=lakeside",
-            evidence_dir=ROOT / "evidence" / "replay" / "lakeside_tenant",
-        )
-        _print_result(lakeside)
+        cases = [
+            ("success", {"member_id": "12345"}, url, None),
+            ("member_not_found", {"member_id": "99999"}, url, None),
+            ("lakeside_tenant", {"member_id": "12345"}, url + "/?inst=lakeside", None),
+        ]
+        for name, inputs, start, hook in cases:
+            result = await run_replay(
+                cap,
+                inputs,
+                start_url=start,
+                evidence_dir=ROOT / "evidence" / "replay" / name,
+                on_escalate=hook,
+            )
+            _print_result(result)
+            _write_result(ROOT / "evidence" / "replay" / name, result)
 
         async def human(session):
+            from hands.operator.app import register
+
+            register(session)
             ws = session.page.frame_locator("iframe[name='ws']")
             await ws.locator("input[value='continue']").click()
             await ws.get_by_text("Share Inquiry").wait_for(timeout=8000)
@@ -191,6 +191,7 @@ def demo(
             on_escalate=human,
         )
         _print_result(hold)
+        _write_result(ROOT / "evidence" / "replay" / "fraud_hold", hold)
 
     asyncio.run(run_all())
 
@@ -212,6 +213,17 @@ def demo(
             (ROOT / "evidence" / "capabilities" / "lookup_regular_share_balance.discovered.json").write_text(
                 cap2.model_dump_json(indent=2)
             )
+
+
+@app.command()
+def operator(
+    port: int = typer.Option(8766, help="Port for the mock operator console"),
+) -> None:
+    """Mock operator console. Escalations register the live session here for resume."""
+    from hands.operator.app import create_operator_app
+
+    console.print(f"Operator console at http://127.0.0.1:{port}")
+    uvicorn.run(create_operator_app(), host="127.0.0.1", port=port, log_level="warning")
 
 
 @app.command()
@@ -244,6 +256,11 @@ def _load_cap(path: Path, target: str | None) -> Capability:
     from hands.record.golden import lookup_regular_share
 
     return lookup_regular_share(target or "http://127.0.0.1:8765", load_policy())
+
+
+def _write_result(evidence_dir: Path, result) -> None:
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    (evidence_dir / "result.json").write_text(result.model_dump_json(indent=2) + "\n")
 
 
 def _print_result(result) -> None:
